@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ethers } from 'ethers';
 import './App.css';
 import SampleTokenABI from './contracts/SampleToken.json';
@@ -8,8 +8,6 @@ const TOKEN_ADDRESS = sepoliaDeployment.SampleToken.address;
 const ABI = SampleTokenABI.abi;
 
 function App() {
-  const [provider, setProvider] = useState(null);
-  const [signer, setSigner] = useState(null);
   const [contract, setContract] = useState(null);
   const [account, setAccount] = useState(null);
   const [tokenName, setTokenName] = useState('');
@@ -34,27 +32,18 @@ function App() {
         setStatus('MetaMask not found. Please install it.');
         return;
       }
-  
-      // Request wallet connection
+
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-  
-      // Use Alchemy directly instead of MetaMask's RPC
-      const _provider = new ethers.providers.JsonRpcProvider(
-        process.env.REACT_APP_ALCHEMY_URL
-      );
-  
+
       const metaMaskProvider = new ethers.providers.Web3Provider(window.ethereum);
       const _signer = metaMaskProvider.getSigner();
       const _account = await _signer.getAddress();
       const _contract = new ethers.Contract(TOKEN_ADDRESS, ABI, _signer);
-      const readContract = new ethers.Contract(TOKEN_ADDRESS, ABI, _provider);
-  
-      setProvider(_provider);
-      setSigner(_signer);
+
       setContract(_contract);
       setAccount(_account);
-  
-      await loadTokenData(readContract, _account);
+
+      await loadTokenData(_contract, _account);
     } catch (err) {
       setStatus('Error connecting wallet: ' + err.message);
     }
@@ -208,47 +197,46 @@ function App() {
               </div>
             ) : (
               <>
-                {/* TOKEN STATS */}
-                <div className="grid grid-cols-4 gap-4 mb-8">
+                {/* TOKEN STATS + BALANCE */}
+                <div className="grid grid-cols-5 gap-3 mb-8">
                   {[
                     { label: 'Token Name', value: tokenName },
                     { label: 'Symbol', value: tokenSymbol },
                     { label: 'Total Supply', value: Number(totalSupply).toLocaleString() },
                     { label: 'Max Cap', value: Number(cap).toLocaleString() },
+                    { label: 'Your Balance', value: Number(balance).toLocaleString() + ' ' + tokenSymbol },
                   ].map((stat) => (
-                    <div key={stat.label} className="rounded-2xl p-5 shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.8)' }}>
+                    <div key={stat.label} className="rounded-2xl p-4 shadow-sm card-hover" 
+                      style={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(255, 255, 255, 0.8)',
+                        borderLeft: '4px solid #0f4c5c'
+                      }}>
                       <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#64748b' }}>
                         {stat.label}
                       </p>
-                      <p className="text-xl font-bold" style={{ color: '#0f4c5c' }}>
+                      <p className="text-lg font-bold" style={{ color: stat.label === 'Your Balance' ? '#f59e0b' : '#0f4c5c' }}>
                         {stat.value}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                {/* BALANCE CARD */}
-                <div className="rounded-2xl p-6 mb-8 shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.8)' }}>
-                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#64748b' }}>
-                    Your Balance
-                  </p>
-                  <p className="text-4xl font-bold" style={{ color: '#f59e0b' }}>
-                    {Number(balance).toLocaleString()} <span className="text-2xl">{tokenSymbol}</span>
-                  </p>
-                </div>
-
                 {/* TRANSFER */}
-                <div className="rounded-2xl p-6 mb-8 shadow-sm" 
-                      style={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.6)', 
-                      backdropFilter: 'blur(12px)',
-                      WebkitBackdropFilter: 'blur(12px)',
-                      border: '1px solid rgba(255, 255, 255, 0.8)'
-                    }}>
-                  <h2 className="text-xl font-bold mb-4" style={{ color: '#0f4c5c' }}>
+                <div className="rounded-2xl p-6 mb-8 shadow-sm card-hover"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255, 255, 255, 0.8)',
+                    borderLeft: '4px solid #0f4c5c'
+                  }}>
+                  <h2 className="text-lg font-bold mb-4" style={{ color: '#0f4c5c' }}>
                     Transfer Tokens
                   </h2>
-                  <div className="flex gap-4">
+                  <div className="flex gap-3">
                     <input
                       type="text"
                       placeholder="Recipient address (0x...)"
@@ -262,12 +250,12 @@ function App() {
                       placeholder="Amount"
                       value={transferAmount}
                       onChange={(e) => setTransferAmount(e.target.value)}
-                      className="w-36 border rounded-xl px-4 py-3 text-sm outline-none"
+                      className="w-32 border rounded-xl px-4 py-3 text-sm outline-none"
                       style={{ borderColor: '#bae6fd', color: '#334155' }}
                     />
                     <button
                       onClick={handleTransfer}
-                      className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90"
+                      className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 btn-hover"
                       style={{ backgroundColor: '#f59e0b' }}
                     >
                       Send
@@ -277,7 +265,14 @@ function App() {
 
                 {/* ADMIN PANEL */}
                 {(isAdmin || isMinter || isPauser) && (
-                  <div className="rounded-2xl p-6 shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.8)', borderLeft: '4px solid #f59e0b' }}>
+                  <div className="rounded-2xl p-6 shadow-sm card-hover" 
+                      style={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(255, 255, 255, 0.8)',
+                        borderLeft: '4px solid #0f4c5c'
+                      }}>
                     <h2 className="text-xl font-bold mb-6" style={{ color: '#0f4c5c' }}>
                       Admin Panel
                     </h2>
@@ -285,7 +280,7 @@ function App() {
                     {/* MINT */}
                     {isMinter && (
                       <div className="mb-6">
-                        <p className="text-sm font-semibold mb-2" style={{ color: '#334155' }}>Mint Tokens</p>
+                        <p className="text-sm font-semibold mb-2" style={{ color: '#1a5c38' }}>Mint Tokens</p>
                         <div className="flex gap-4">
                           <input
                             type="text"
@@ -293,7 +288,7 @@ function App() {
                             value={mintTo}
                             onChange={(e) => setMintTo(e.target.value)}
                             className="flex-1 border rounded-xl px-4 py-3 text-sm outline-none"
-                            style={{ borderColor: '#bae6fd', color: '#334155' }}
+                            style={{ borderColor: '#bae6fd', color: '#1a5c38' }}
                           />
                           <input
                             type="number"
@@ -301,12 +296,12 @@ function App() {
                             value={mintAmount}
                             onChange={(e) => setMintAmount(e.target.value)}
                             className="w-36 border rounded-xl px-4 py-3 text-sm outline-none"
-                            style={{ borderColor: '#bae6fd', color: '#334155' }}
+                            style={{ borderColor: '#bae6fd', color: '#1a5c38' }}
                           />
                           <button
                             onClick={handleMint}
-                            className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90"
-                            style={{ backgroundColor: '#0f4c5c' }}
+                            className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 btn-hover"
+                            style={{ backgroundColor: '#1a5c38' }}
                           >
                             Mint
                           </button>
@@ -316,7 +311,7 @@ function App() {
 
                     {/* BURN */}
                     <div className="mb-6">
-                      <p className="text-sm font-semibold mb-2" style={{ color: '#334155' }}>Burn Tokens</p>
+                      <p className="text-sm font-semibold mb-2" style={{ color: '#6b0f1a' }}>Burn Tokens</p>
                       <div className="flex gap-4">
                         <input
                           type="number"
@@ -324,12 +319,12 @@ function App() {
                           value={burnAmount}
                           onChange={(e) => setBurnAmount(e.target.value)}
                           className="w-48 border rounded-xl px-4 py-3 text-sm outline-none"
-                          style={{ borderColor: '#bae6fd', color: '#334155' }}
+                          style={{ borderColor: '#bae6fd', color: '#6b0f1a' }}
                         />
                         <button
                           onClick={handleBurn}
-                          className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90"
-                          style={{ backgroundColor: '#ef4444' }}
+                          className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 btn-hover"
+                          style={{ backgroundColor: '#6b0f1a' }}
                         >
                           Burn
                         </button>
@@ -338,16 +333,16 @@ function App() {
 
                     {/* PAUSE */}
                     {isPauser && (
-                      <div>
-                        <p className="text-sm font-semibold mb-2" style={{ color: '#334155' }}>
-                          Token Status: <span style={{ color: isPaused ? '#ef4444' : '#22c55e' }}>
+                      <div className="flex items-center gap-4">
+                        <p className="text-sm font-semibold" style={{ color: '#6b0f1a' }}>
+                          Token Status: <span style={{ color: isPaused ? '#6b0f1a' : '#22c55e' }}>
                             {isPaused ? 'Paused' : 'Active'}
                           </span>
                         </p>
                         <button
                           onClick={handlePause}
-                          className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90"
-                          style={{ backgroundColor: isPaused ? '#22c55e' : '#ef4444' }}
+                          className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 btn-hover"
+                          style={{ backgroundColor: isPaused ? '#22c55e' : '#6b0f1a' }}
                         >
                           {isPaused ? 'Unpause Token' : 'Pause Token'}
                         </button>

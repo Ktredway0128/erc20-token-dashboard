@@ -1,8 +1,8 @@
 body {
     margin: 0;
-  }
+}
   
-  .shimmer-bg {
+.shimmer-bg {
     position: fixed;
     top: 0;
     left: 0;
@@ -12,9 +12,9 @@ body {
     background: linear-gradient(135deg, #a8d8ea 0%, #6ec6e6 30%, #b8e4f5 60%, #7dd3f0 100%);
     background-size: 400% 400%;
     animation: shimmer 5s ease-in-out infinite;
-  }
+}
   
-  .shimmer-bg::after {
+.shimmer-bg::after {
     content: '';
     position: absolute;
     top: 0;
@@ -29,21 +29,39 @@ body {
     background-position: 0 0, 15px 15px, 30px 30px;
     animation: sparkle 2.5s linear infinite;
     opacity: 0.7;
-  }
+}
   
-  .content {
+.content {
     position: relative;
     z-index: 1;
-  }
+}
   
-  @keyframes shimmer {
+@keyframes shimmer {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
-  }
+}
   
-  @keyframes sparkle {
+@keyframes sparkle {
     0% { opacity: 0.2; transform: scale(1); }
     50% { opacity: 0.5; transform: scale(1.02); }
     100% { opacity: 0.2; transform: scale(1); }
-  }
+}
+
+.card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+  
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(15, 76, 92, 0.15);
+}
+
+.btn-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+  
+.btn-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
