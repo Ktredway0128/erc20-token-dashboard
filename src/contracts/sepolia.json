@@ -1,0 +1,15 @@
+{
+    "network": "sepolia",
+    "chainId": 11155111,
+    "SampleToken": {
+      "address": "0x036150039c33b1645080a9c913f96D4c65ccca48",
+      "etherscan": "https://sepolia.etherscan.io/address/0x036150039c33b1645080a9c913f96D4c65ccca48#code",
+      "deployedAt": "2026-03-19",
+      "constructorArgs": {
+        "name": "Sample Token",
+        "symbol": "STK",
+        "cap": "1000000",
+        "initialSupply": "100000"
+      }
+    }
+  }

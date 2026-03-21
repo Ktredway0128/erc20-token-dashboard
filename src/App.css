@@ -1,38 +1,49 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+body {
+    margin: 0;
   }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+  
+  .shimmer-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background: linear-gradient(135deg, #a8d8ea 0%, #6ec6e6 30%, #b8e4f5 60%, #7dd3f0 100%);
+    background-size: 400% 400%;
+    animation: shimmer 5s ease-in-out infinite;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .shimmer-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      radial-gradient(circle, rgba(255,255,255,0.95) 1px, transparent 1px),
+      radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 1px),
+      radial-gradient(circle, rgba(255,255,255,0.5) 2px, transparent 2px);
+    background-size: 40px 40px, 25px 25px, 60px 60px;
+    background-position: 0 0, 15px 15px, 30px 30px;
+    animation: sparkle 2.5s linear infinite;
+    opacity: 0.7;
   }
-}
+  
+  .content {
+    position: relative;
+    z-index: 1;
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  @keyframes sparkle {
+    0% { opacity: 0.2; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.02); }
+    100% { opacity: 0.2; transform: scale(1); }
+  }
