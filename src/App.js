@@ -7,6 +7,40 @@ import sepoliaDeployment from './contracts/sepolia.json';
 const TOKEN_ADDRESS = sepoliaDeployment.SampleToken.address;
 const ABI = SampleTokenABI.abi;
 
+const STATUS_COLORS = {
+  transfer: { backgroundColor: '#f59e0b', color: '#fff' },
+  mint: { backgroundColor: '#1a5c38', color: '#fff' },
+  burn: { backgroundColor: '#6b0f1a', color: '#fff' },
+  pause: { backgroundColor: '#f59e0b', color: '#fff' },
+  success: { backgroundColor: '#22c55e', color: '#fff' },
+  error: { backgroundColor: '#dc2626', color: '#fff' },
+  default: { backgroundColor: '#e0f2fe', color: '#0f4c5c' },
+};
+
+const parseError = (err) => {
+  if (err.message.includes('paused')) return 'Token is paused. All transactions are rejected.';
+  if (err.message.includes('user rejected')) return 'Transaction rejected in MetaMask.';
+  if (err.message.includes('insufficient funds')) return 'Insufficient funds for this transaction.';
+  if (err.message.includes('transfer amount exceeds balance')) return 'Transfer amount exceeds your balance.';
+  return 'Transaction failed. Please try again.';
+};
+
+function Spinner() {
+  return (
+    <span style={{
+      display: 'inline-block',
+      width: '16px',
+      height: '16px',
+      border: '2px solid rgba(255,255,255,0.4)',
+      borderTop: '2px solid #fff',
+      borderRadius: '50%',
+      animation: 'spin 0.8s linear infinite',
+      marginRight: '10px',
+      verticalAlign: 'middle',
+    }} />
+  );
+}
+
 function App() {
   const [contract, setContract] = useState(null);
   const [readContract, setReadContract] = useState(null);
@@ -26,19 +60,21 @@ function App() {
   const [mintAmount, setMintAmount] = useState('');
   const [burnAmount, setBurnAmount] = useState('');
   const [status, setStatus] = useState('');
+  const [statusStyle, setStatusStyle] = useState(STATUS_COLORS.default);
+  const [isLoading, setIsLoading] = useState(false);
 
   const connectWallet = async () => {
     try {
       if (!window.ethereum) {
         setStatus('MetaMask not found. Please install it.');
+        setStatusStyle(STATUS_COLORS.error);
         return;
       }
-
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
 
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       if (chainId !== '0xaa36a7') {
         setStatus('Please switch MetaMask to the Sepolia network.');
+        setStatusStyle(STATUS_COLORS.error);
         return;
       }
 
@@ -61,6 +97,7 @@ function App() {
       await loadTokenData(_readContract, _account);
     } catch (err) {
       setStatus('Error connecting wallet: ' + err.message);
+      setStatusStyle(STATUS_COLORS.error);
     }
   };
 
@@ -92,88 +129,106 @@ function App() {
       setIsPaused(paused);
     } catch (err) {
       setStatus('Error loading token data: ' + err.message);
+      setStatusStyle(STATUS_COLORS.error);
     }
   };
 
   const handleTransfer = async () => {
     try {
       setStatus('Transferring...');
+      setStatusStyle(STATUS_COLORS.transfer);
+      setIsLoading(true);
       const tx = await contract.transfer(
         transferTo,
         ethers.utils.parseUnits(transferAmount, 18)
       );
       await tx.wait();
       await new Promise(resolve => setTimeout(resolve, 2000));
+      setIsLoading(false);
       setStatus('Transfer successful!');
+      setStatusStyle(STATUS_COLORS.success);
       await loadTokenData(readContract, account);
       setTransferTo('');
       setTransferAmount('');
     } catch (err) {
-      if (err.message.includes('paused')) {
-        setStatus('Token is paused. All transactions are rejected.');
-      } else {
-        setStatus('Transfer failed: ' + err.message);
-      }
+      setIsLoading(false);
+      setStatus(parseError(err));
+      setStatusStyle(STATUS_COLORS.error);
     }
   };
 
   const handleMint = async () => {
     try {
       setStatus('Minting...');
+      setStatusStyle(STATUS_COLORS.mint);
+      setIsLoading(true);
       const tx = await contract.mint(
         mintTo,
         ethers.utils.parseUnits(mintAmount, 18)
       );
       await tx.wait();
       await new Promise(resolve => setTimeout(resolve, 2000));
+      setIsLoading(false);
       setStatus('Mint successful!');
+      setStatusStyle(STATUS_COLORS.success);
       await loadTokenData(readContract, account);
       setMintTo('');
       setMintAmount('');
     } catch (err) {
-      if (err.message.includes('paused')) {
-        setStatus('Token is paused. All transactions are rejected.');
-      } else {
-        setStatus('Transfer failed: ' + err.message);
-      }
+      setIsLoading(false);
+      setStatus(parseError(err));
+      setStatusStyle(STATUS_COLORS.error);
     }
   };
 
   const handleBurn = async () => {
     try {
       setStatus('Burning...');
+      setStatusStyle(STATUS_COLORS.burn);
+      setIsLoading(true);
       const tx = await contract.burn(
         ethers.utils.parseUnits(burnAmount, 18)
       );
       await tx.wait();
       await new Promise(resolve => setTimeout(resolve, 2000));
+      setIsLoading(false);
       setStatus('Burn successful!');
+      setStatusStyle(STATUS_COLORS.success);
       await loadTokenData(readContract, account);
       setBurnAmount('');
     } catch (err) {
-      if (err.message.includes('paused')) {
-        setStatus('Token is paused. All transactions are rejected.');
-      } else {
-        setStatus('Transfer failed: ' + err.message);
-      }
+      setIsLoading(false);
+      setStatus(parseError(err));
+      setStatusStyle(STATUS_COLORS.error);
     }
   };
 
   const handlePause = async () => {
     try {
       setStatus(isPaused ? 'Unpausing...' : 'Pausing...');
+      setStatusStyle(STATUS_COLORS.pause);
+      setIsLoading(true);
       const tx = isPaused ? await contract.unpause() : await contract.pause();
       await tx.wait();
       await new Promise(resolve => setTimeout(resolve, 2000));
+      setIsLoading(false);
       setStatus(isPaused ? 'Token unpaused!' : 'Token paused!');
+      setStatusStyle(STATUS_COLORS.success);
       await loadTokenData(readContract, account);
     } catch (err) {
-      setStatus('Error: ' + err.message);
+      setIsLoading(false);
+      setStatus(parseError(err));
+      setStatusStyle(STATUS_COLORS.error);
     }
   };
 
   return (
     <div>
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       <div className="shimmer-bg"></div>
       <div className="content min-h-screen p-8">
 
@@ -203,8 +258,9 @@ function App() {
 
           {/* STATUS MESSAGE */}
           {status && (
-            <div className="mb-6 p-4 rounded-xl text-sm font-medium"
-              style={{ backgroundColor: '#e0f2fe', color: '#0f4c5c' }}>
+            <div className="mb-6 p-4 rounded-xl text-sm font-medium flex items-center transition-all"
+              style={statusStyle}>
+              {isLoading && <Spinner />}
               {status}
             </div>
           )}
@@ -262,7 +318,7 @@ function App() {
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   border: '1px solid rgba(255, 255, 255, 0.8)',
-                  borderLeft: '4px solid #0f4c5c'
+                  borderLeft: '4px solid #f59e0b'
                 }}>
                 <h2 className="text-lg font-bold mb-4" style={{ color: '#0f4c5c' }}>
                   Transfer Tokens
@@ -286,22 +342,23 @@ function App() {
                   />
                   <button
                     onClick={handleTransfer}
+                    disabled={isLoading}
                     className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 btn-hover"
-                    style={{ backgroundColor: '#f59e0b' }}
+                    style={{ backgroundColor: '#f59e0b', opacity: isLoading ? 0.6 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
                   >
                     Send
                   </button>
                 </div>
               </div>
 
-              {/* BURN - available to all token holders */}
+              {/* BURN */}
               <div className="rounded-2xl p-6 mb-8 shadow-sm card-hover"
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.6)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   border: '1px solid rgba(255, 255, 255, 0.8)',
-                  borderLeft: '4px solid #0f4c5c'
+                  borderLeft: '4px solid #6b0f1a'
                 }}>
                 <h2 className="text-lg font-bold mb-4" style={{ color: '#0f4c5c' }}>
                   Burn Tokens
@@ -313,12 +370,13 @@ function App() {
                     value={burnAmount}
                     onChange={(e) => setBurnAmount(e.target.value)}
                     className="w-48 border rounded-xl px-4 py-3 text-sm outline-none"
-                    style={{ borderColor: '#bae6fd', color: '#6b0f1a' }}
+                    style={{ borderColor: '#bae6fd', color: '#1a5c38' }}
                   />
                   <button
                     onClick={handleBurn}
+                    disabled={isLoading}
                     className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 btn-hover"
-                    style={{ backgroundColor: '#6b0f1a' }}
+                    style={{ backgroundColor: '#6b0f1a', opacity: isLoading ? 0.6 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
                   >
                     Burn
                   </button>
@@ -362,8 +420,9 @@ function App() {
                         />
                         <button
                           onClick={handleMint}
+                          disabled={isLoading}
                           className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 btn-hover"
-                          style={{ backgroundColor: '#1a5c38' }}
+                          style={{ backgroundColor: '#1a5c38', opacity: isLoading ? 0.6 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
                         >
                           Mint
                         </button>
@@ -375,14 +434,15 @@ function App() {
                   {isPauser && (
                     <div className="flex items-center gap-4">
                       <p className="text-sm font-semibold" style={{ color: '#0f4c5c' }}>
-                        Token Status: <span style={{ color: isPaused ? '#6b0f1a' : '#22c55e' }}>
+                        Token Status: <span style={{ color: isPaused ? '#dc2626' : '#22c55e' }}>
                           {isPaused ? 'Paused' : 'Active'}
                         </span>
                       </p>
                       <button
                         onClick={handlePause}
+                        disabled={isLoading}
                         className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 btn-hover"
-                        style={{ backgroundColor: isPaused ? '#22c55e' : '#6b0f1a' }}
+                        style={{ backgroundColor: isPaused ? '#22c55e' : '#f59e0b', opacity: isLoading ? 0.6 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
                       >
                         {isPaused ? 'Unpause Token' : 'Pause Token'}
                       </button>
