@@ -7,6 +7,8 @@
 
 A production-ready React frontend for interacting with a deployed ERC-20 token contract.
 
+View dashboard here - https://erc20-token-dashboard.netlify.app/
+
 > ⚠️ This dashboard is connected to the Sepolia test network for demonstration purposes only.
 > Token distribution is managed by the deployer via direct transfer, mint, or airdrop contract.
 > These contracts have not been professionally audited. A full security audit is strongly recommended before any mainnet deployment.
