@@ -1,13 +1,16 @@
 # ERC-20 TOKEN DASHBOARD
 
+[![Verified on Etherscan](https://img.shields.io/badge/Etherscan-Verified-brightgreen)](https://sepolia.etherscan.io/address/0x036150039c33b1645080a9c913f96d4c65ccca48#code)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Netlify-blue)](https://erc20-token-dashboard.netlify.app/)
+
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Ethers.js](https://img.shields.io/badge/Ethers.js-5.8-purple)
 ![Network](https://img.shields.io/badge/Network-Sepolia-green)
 
-A production-ready React frontend for interacting with a deployed ERC-20 token contract.
+Built by [Kyle Tredway Development](https://kyle-tredway-portfolio.netlify.app/) — professional Solidity smart contract packages for Web3 companies.
 
-View dashboard here - https://erc20-token-dashboard.netlify.app/
+A production-ready React frontend for interacting with a deployed ERC-20 token contract.
 
 > ⚠️ This dashboard is connected to the Sepolia test network for demonstration purposes only.
 > Token distribution is managed by the deployer via direct transfer, mint, or airdrop contract.
