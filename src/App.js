@@ -123,7 +123,7 @@ function App() {
     return () => {
       window.ethereum.removeListener('accountsChanged', handleAccountChange);
     };
-  }, []);
+  }, [connectWallet]);
 
   const loadTokenData = async (_contract, _account) => {
     try {
