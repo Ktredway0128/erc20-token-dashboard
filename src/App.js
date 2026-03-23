@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import './App.css';
 import SampleTokenABI from './contracts/SampleToken.json';
@@ -62,8 +62,10 @@ function App() {
   const [status, setStatus] = useState('');
   const [statusStyle, setStatusStyle] = useState(STATUS_COLORS.default);
   const [isLoading, setIsLoading] = useState(false);
+  const [txHash, setTxHash] = useState('');
 
   const connectWallet = async () => {
+    
     try {
       if (!window.ethereum) {
         setStatus('MetaMask not found. Please install it.');
@@ -101,6 +103,28 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    if (!window.ethereum) return;
+  
+    const handleAccountChange = async (accounts) => {
+      if (accounts.length === 0) {
+        setAccount(null);
+        setContract(null);
+        setReadContract(null);
+        setStatus('');
+        setTxHash('');
+      } else {
+        await connectWallet();
+      }
+    };
+  
+    window.ethereum.on('accountsChanged', handleAccountChange);
+  
+    return () => {
+      window.ethereum.removeListener('accountsChanged', handleAccountChange);
+    };
+  }, []);
+
   const loadTokenData = async (_contract, _account) => {
     try {
       const name = await _contract.name();
@@ -134,6 +158,17 @@ function App() {
   };
 
   const handleTransfer = async () => {
+    if (!transferTo || !transferAmount || Number(transferAmount) <= 0) {
+      setStatus('Please enter a valid address and amount.');
+      setStatusStyle(STATUS_COLORS.error);
+      return;
+    }
+    if (transferTo.toLowerCase() === account.toLowerCase()) {
+      setStatus('You cannot transfer tokens to yourself.');
+      setStatusStyle(STATUS_COLORS.error);
+      return;
+    }
+    
     try {
       setStatus('Transferring...');
       setStatusStyle(STATUS_COLORS.transfer);
@@ -145,6 +180,7 @@ function App() {
       await tx.wait();
       await new Promise(resolve => setTimeout(resolve, 2000));
       setIsLoading(false);
+      setTxHash(tx.hash);
       setStatus('Transfer successful!');
       setStatusStyle(STATUS_COLORS.success);
       await loadTokenData(readContract, account);
@@ -152,12 +188,19 @@ function App() {
       setTransferAmount('');
     } catch (err) {
       setIsLoading(false);
+      setTxHash(''); 
       setStatus(parseError(err));
       setStatusStyle(STATUS_COLORS.error);
     }
   };
 
   const handleMint = async () => {
+    if (!mintTo || !mintAmount || Number(mintAmount) <= 0) {
+      setStatus('Please enter a valid address and amount.');
+      setStatusStyle(STATUS_COLORS.error);
+      return;
+    }
+    
     try {
       setStatus('Minting...');
       setStatusStyle(STATUS_COLORS.mint);
@@ -169,6 +212,7 @@ function App() {
       await tx.wait();
       await new Promise(resolve => setTimeout(resolve, 2000));
       setIsLoading(false);
+      setTxHash(tx.hash);
       setStatus('Mint successful!');
       setStatusStyle(STATUS_COLORS.success);
       await loadTokenData(readContract, account);
@@ -176,12 +220,19 @@ function App() {
       setMintAmount('');
     } catch (err) {
       setIsLoading(false);
+      setTxHash(''); 
       setStatus(parseError(err));
       setStatusStyle(STATUS_COLORS.error);
     }
   };
 
   const handleBurn = async () => {
+    if (!burnAmount || Number(burnAmount) <= 0) {
+      setStatus('Please enter a valid amount to burn.');
+      setStatusStyle(STATUS_COLORS.error);
+      return;
+    }
+    
     try {
       setStatus('Burning...');
       setStatusStyle(STATUS_COLORS.burn);
@@ -192,12 +243,14 @@ function App() {
       await tx.wait();
       await new Promise(resolve => setTimeout(resolve, 2000));
       setIsLoading(false);
+      setTxHash(tx.hash);
       setStatus('Burn successful!');
       setStatusStyle(STATUS_COLORS.success);
       await loadTokenData(readContract, account);
       setBurnAmount('');
     } catch (err) {
       setIsLoading(false);
+      setTxHash(''); 
       setStatus(parseError(err));
       setStatusStyle(STATUS_COLORS.error);
     }
@@ -256,12 +309,21 @@ function App() {
           </div>
           <hr style={{ borderColor: 'rgba(255, 255, 255, 0.5)', marginBottom: '2rem' }} />
 
-          {/* STATUS MESSAGE */}
           {status && (
-            <div className="mb-6 p-4 rounded-xl text-sm font-medium flex items-center transition-all"
+            <div className="mb-6 p-4 rounded-xl text-sm font-medium flex items-center gap-2 transition-all"
               style={statusStyle}>
               {isLoading && <Spinner />}
-              {status}
+              <span>{status}</span>
+              {txHash && !isLoading && (
+                <a
+                  href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#fff', textDecoration: 'underline', marginLeft: '8px', fontWeight: 'bold' }}
+                >
+                  View on Etherscan ↗
+                </a>
+              )}
             </div>
           )}
 
@@ -391,7 +453,7 @@ function App() {
                     backdropFilter: 'blur(12px)',
                     WebkitBackdropFilter: 'blur(12px)',
                     border: '1px solid rgba(255, 255, 255, 0.8)',
-                    borderLeft: '4px solid #0f4c5c'
+                    borderLeft: '4px solid #1a5c38'
                   }}>
                   <h2 className="text-xl font-bold mb-6" style={{ color: '#0f4c5c' }}>
                     Admin Panel
