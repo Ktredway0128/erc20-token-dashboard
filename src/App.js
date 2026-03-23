@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import './App.css';
 import SampleTokenABI from './contracts/SampleToken.json';
@@ -64,47 +64,49 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState('');
 
-  const connectWallet = useCallback(async () => {
+  const connectWallet = async () => {
     try {
       if (!window.ethereum) {
         setStatus('MetaMask not found. Please install it.');
         setStatusStyle(STATUS_COLORS.error);
         return;
       }
-  
+
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       if (chainId !== '0xaa36a7') {
         setStatus('Please switch MetaMask to the Sepolia network.');
         setStatusStyle(STATUS_COLORS.error);
         return;
       }
-  
+
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+
       const metaMaskProvider = new ethers.providers.Web3Provider(window.ethereum);
       const _signer = metaMaskProvider.getSigner();
       const _account = await _signer.getAddress();
-  
+
       const alchemyProvider = new ethers.providers.JsonRpcProvider(
         process.env.REACT_APP_ALCHEMY_URL,
         { name: 'sepolia', chainId: 11155111 }
       );
-  
+
       const _contract = new ethers.Contract(TOKEN_ADDRESS, ABI, _signer);
       const _readContract = new ethers.Contract(TOKEN_ADDRESS, ABI, alchemyProvider);
-  
+
       setContract(_contract);
       setReadContract(_readContract);
       setAccount(_account);
-  
+
       await loadTokenData(_readContract, _account);
     } catch (err) {
       setStatus('Error connecting wallet: ' + err.message);
       setStatusStyle(STATUS_COLORS.error);
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (!window.ethereum) return;
-  
+
     const handleAccountChange = async (accounts) => {
       if (accounts.length === 0) {
         setAccount(null);
@@ -116,13 +118,14 @@ function App() {
         await connectWallet();
       }
     };
-  
+
     window.ethereum.on('accountsChanged', handleAccountChange);
-  
+
     return () => {
       window.ethereum.removeListener('accountsChanged', handleAccountChange);
     };
-  }, [connectWallet]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadTokenData = async (_contract, _account) => {
     try {
@@ -167,7 +170,6 @@ function App() {
       setStatusStyle(STATUS_COLORS.error);
       return;
     }
-    
     try {
       setStatus('Transferring...');
       setStatusStyle(STATUS_COLORS.transfer);
@@ -187,7 +189,7 @@ function App() {
       setTransferAmount('');
     } catch (err) {
       setIsLoading(false);
-      setTxHash(''); 
+      setTxHash('');
       setStatus(parseError(err));
       setStatusStyle(STATUS_COLORS.error);
     }
@@ -199,7 +201,6 @@ function App() {
       setStatusStyle(STATUS_COLORS.error);
       return;
     }
-    
     try {
       setStatus('Minting...');
       setStatusStyle(STATUS_COLORS.mint);
@@ -219,7 +220,7 @@ function App() {
       setMintAmount('');
     } catch (err) {
       setIsLoading(false);
-      setTxHash(''); 
+      setTxHash('');
       setStatus(parseError(err));
       setStatusStyle(STATUS_COLORS.error);
     }
@@ -231,7 +232,6 @@ function App() {
       setStatusStyle(STATUS_COLORS.error);
       return;
     }
-    
     try {
       setStatus('Burning...');
       setStatusStyle(STATUS_COLORS.burn);
@@ -249,7 +249,7 @@ function App() {
       setBurnAmount('');
     } catch (err) {
       setIsLoading(false);
-      setTxHash(''); 
+      setTxHash('');
       setStatus(parseError(err));
       setStatusStyle(STATUS_COLORS.error);
     }
@@ -270,7 +270,7 @@ function App() {
       await loadTokenData(readContract, account);
     } catch (err) {
       setIsLoading(false);
-      setTxHash(''); 
+      setTxHash('');
       setStatus(parseError(err));
       setStatusStyle(STATUS_COLORS.error);
     }
@@ -285,8 +285,6 @@ function App() {
       `}</style>
       <div className="shimmer-bg"></div>
       <div className="content min-h-screen p-8">
-
-        {/* HEADER */}
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <div>
@@ -299,9 +297,7 @@ function App() {
             </div>
             {account && (
               <div className="text-right">
-                <p className="text-xs font-mono" style={{ color: '#64748b' }}>
-                  Connected
-                </p>
+                <p className="text-xs font-mono" style={{ color: '#64748b' }}>Connected</p>
                 <p className="text-sm font-mono font-semibold" style={{ color: '#0f4c5c' }}>
                   {account.slice(0, 6)}...{account.slice(-4)}
                 </p>
@@ -347,7 +343,6 @@ function App() {
             </div>
           ) : (
             <>
-              {/* TOKEN STATS + BALANCE */}
               <div className="grid grid-cols-5 gap-3 mb-8">
                 {[
                   { label: 'Token Name', value: tokenName },
@@ -364,9 +359,7 @@ function App() {
                       border: '1px solid rgba(255, 255, 255, 0.8)',
                       borderLeft: '4px solid #0f4c5c'
                     }}>
-                    <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#64748b' }}>
-                      {stat.label}
-                    </p>
+                    <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#64748b' }}>{stat.label}</p>
                     <p className="text-lg font-bold" style={{ color: stat.label === 'Your Balance' ? '#f59e0b' : '#0f4c5c' }}>
                       {stat.value}
                     </p>
@@ -383,9 +376,7 @@ function App() {
                   border: '1px solid rgba(255, 255, 255, 0.8)',
                   borderLeft: '4px solid #f59e0b'
                 }}>
-                <h2 className="text-lg font-bold mb-4" style={{ color: '#0f4c5c' }}>
-                  Transfer Tokens
-                </h2>
+                <h2 className="text-lg font-bold mb-4" style={{ color: '#0f4c5c' }}>Transfer Tokens</h2>
                 <div className="flex gap-3">
                   <input
                     type="text"
@@ -423,9 +414,7 @@ function App() {
                   border: '1px solid rgba(255, 255, 255, 0.8)',
                   borderLeft: '4px solid #6b0f1a'
                 }}>
-                <h2 className="text-lg font-bold mb-4" style={{ color: '#0f4c5c' }}>
-                  Burn Tokens
-                </h2>
+                <h2 className="text-lg font-bold mb-4" style={{ color: '#6b0f1a' }}>Burn Tokens</h2>
                 <div className="flex gap-3">
                   <input
                     type="number"
@@ -433,7 +422,7 @@ function App() {
                     value={burnAmount}
                     onChange={(e) => setBurnAmount(e.target.value)}
                     className="w-48 border rounded-xl px-4 py-3 text-sm outline-none"
-                    style={{ borderColor: '#bae6fd', color: '#1a5c38' }}
+                    style={{ borderColor: '#bae6fd', color: '#6b0f1a' }}
                   />
                   <button
                     onClick={handleBurn}
@@ -446,7 +435,7 @@ function App() {
                 </div>
               </div>
 
-              {/* ADMIN HINT - only shows for non-admin wallets */}
+              {/* ADMIN HINT */}
               {!isAdmin && !isMinter && !isPauser && (
                 <div className="mb-8 p-4 rounded-xl text-base font-medium text-center"
                   style={{
@@ -471,11 +460,8 @@ function App() {
                     border: '1px solid rgba(255, 255, 255, 0.8)',
                     borderLeft: '4px solid #1a5c38'
                   }}>
-                  <h2 className="text-xl font-bold mb-6" style={{ color: '#0f4c5c' }}>
-                    Admin Panel
-                  </h2>
+                  <h2 className="text-xl font-bold mb-6" style={{ color: '#0f4c5c' }}>Admin Panel</h2>
 
-                  {/* MINT */}
                   {isMinter && (
                     <div className="mb-6">
                       <p className="text-sm font-semibold mb-2" style={{ color: '#1a5c38' }}>Mint Tokens</p>
@@ -508,7 +494,6 @@ function App() {
                     </div>
                   )}
 
-                  {/* PAUSE */}
                   {isPauser && (
                     <div className="flex items-center gap-4">
                       <p className="text-sm font-semibold" style={{ color: '#0f4c5c' }}>
