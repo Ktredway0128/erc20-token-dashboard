@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import './App.css';
 import SampleTokenABI from './contracts/SampleToken.json';
@@ -64,44 +64,43 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState('');
 
-  const connectWallet = async () => {
-    
+  const connectWallet = useCallback(async () => {
     try {
       if (!window.ethereum) {
         setStatus('MetaMask not found. Please install it.');
         setStatusStyle(STATUS_COLORS.error);
         return;
       }
-
+  
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       if (chainId !== '0xaa36a7') {
         setStatus('Please switch MetaMask to the Sepolia network.');
         setStatusStyle(STATUS_COLORS.error);
         return;
       }
-
+  
       const metaMaskProvider = new ethers.providers.Web3Provider(window.ethereum);
       const _signer = metaMaskProvider.getSigner();
       const _account = await _signer.getAddress();
-
+  
       const alchemyProvider = new ethers.providers.JsonRpcProvider(
         process.env.REACT_APP_ALCHEMY_URL,
         { name: 'sepolia', chainId: 11155111 }
       );
-
+  
       const _contract = new ethers.Contract(TOKEN_ADDRESS, ABI, _signer);
       const _readContract = new ethers.Contract(TOKEN_ADDRESS, ABI, alchemyProvider);
-
+  
       setContract(_contract);
       setReadContract(_readContract);
       setAccount(_account);
-
+  
       await loadTokenData(_readContract, _account);
     } catch (err) {
       setStatus('Error connecting wallet: ' + err.message);
       setStatusStyle(STATUS_COLORS.error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!window.ethereum) return;
