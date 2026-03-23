@@ -265,11 +265,13 @@ function App() {
       await tx.wait();
       await new Promise(resolve => setTimeout(resolve, 2000));
       setIsLoading(false);
+      setTxHash(tx.hash);
       setStatus(isPaused ? 'Token unpaused!' : 'Token paused!');
       setStatusStyle(STATUS_COLORS.success);
       await loadTokenData(readContract, account);
     } catch (err) {
       setIsLoading(false);
+      setTxHash(''); 
       setStatus(parseError(err));
       setStatusStyle(STATUS_COLORS.error);
     }
@@ -444,6 +446,21 @@ function App() {
                   </button>
                 </div>
               </div>
+
+              {/* ADMIN HINT - only shows for non-admin wallets */}
+              {!isAdmin && !isMinter && !isPauser && (
+                <div className="mb-8 p-4 rounded-xl text-base font-medium text-center"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255, 255, 255, 0.8)',
+                    borderLeft: '4px solid #0f4c5c',
+                    color: '#64748b'
+                  }}>
+                  <span style={{ fontSize: '1.6rem' }}>🔐</span> Admin functions of minting and token pausing available to authorized wallets
+                </div>
+              )}
 
               {/* ADMIN PANEL */}
               {(isAdmin || isMinter || isPauser) && (

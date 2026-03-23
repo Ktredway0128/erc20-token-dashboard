@@ -1,70 +1,306 @@
-# Getting Started with Create React App
+# ERC-20 TOKEN DASHBOARD
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![React](https://img.shields.io/badge/React-18-blue)
+![Ethers.js](https://img.shields.io/badge/Ethers.js-5.8-purple)
+![Network](https://img.shields.io/badge/Network-Sepolia-green)
 
-## Available Scripts
+A production-ready React frontend for interacting with a deployed ERC-20 token contract.
 
-In the project directory, you can run:
+> ⚠️ This dashboard is connected to the Sepolia test network for demonstration purposes only.
+> Token distribution is managed by the deployer via direct transfer, mint, or airdrop contract.
+> These contracts have not been professionally audited. A full security audit is strongly recommended before any mainnet deployment.
 
-### `npm start`
+This project demonstrates the full lifecycle of a token management dashboard including:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Wallet connection and network validation
+- Real-time token data display
+- Role-based admin controls
+- Transaction feedback with Etherscan verification
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+The repository represents the frontend layer of an ERC-20 Token Launch package, designed to work alongside the ERC-20 Token Launch Contract. It can be extended to support crowdsales, vesting dashboards, airdrop interfaces, and DAO governance panels.
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## PROJECT GOALS
 
-### `npm run build`
+The purpose of this project is to demonstrate how a modern ERC-20 token dashboard should be designed for real-world use.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The dashboard includes common features required by token management interfaces:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Live token data loaded from the blockchain
+- Wallet-based role detection
+- Protected admin functions
+- User-friendly transaction status and error handling
+- Etherscan transaction verification
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+These patterns are widely used in production Web3 applications.
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## DASHBOARD FEATURES
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### WALLET CONNECTION
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The dashboard connects to MetaMask and automatically detects the connected wallet's roles.
+A network check ensures the user is on the correct chain before connecting.
+The UI refreshes automatically when the wallet is switched inside MetaMask.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### LIVE TOKEN DATA
 
-## Learn More
+On connection, the dashboard loads the following data directly from the contract:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- Token Name
+- Token Symbol
+- Total Supply
+- Maximum Cap
+- Connected Wallet Balance
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### TRANSFER TOKENS
 
-### Code Splitting
+Any connected wallet can transfer tokens to another address.
+Input validation prevents empty fields, zero amounts, and self-transfers.
+MetaMask handles signing and broadcasting the transaction.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### BURN TOKENS
 
-### Analyzing the Bundle Size
+Any token holder can permanently destroy tokens from their own balance.
+Burning is available to all wallets, not just admin wallets.
+Each successful burn links directly to the Etherscan transaction.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### ROLE-BASED ADMIN PANEL
 
-### Making a Progressive Web App
+The admin panel is only visible to wallets holding administrative roles.
+Non-admin wallets see a notice that admin functions exist but are restricted to authorized wallets.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Admin functions include:
 
-### Advanced Configuration
+| Function | Role Required | Description |
+|----------|--------------|-------------|
+| Mint Tokens | MINTER_ROLE | Mint new tokens to any address up to the cap |
+| Pause Token | PAUSER_ROLE | Pause all token transfers for emergency use |
+| Unpause Token | PAUSER_ROLE | Resume all token transfers |
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### TRANSACTION FEEDBACK
 
-### Deployment
+Every action triggers a color-coded status bar with a loading spinner:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+| Action | Status Color |
+|--------|-------------|
+| Transferring | Amber |
+| Minting | Dark Green |
+| Burning | Dark Red |
+| Pausing / Unpausing | Amber |
+| Success | Bright Green |
+| Error | Red |
 
-### `npm run build` fails to minify
+On success, a clickable Etherscan link appears for immediate transaction verification.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### ERROR HANDLING
+
+User-friendly error messages are displayed for common failure cases:
+
+- Token is paused
+- Transaction rejected in MetaMask
+- Insufficient funds
+- Transfer amount exceeds balance
+- General transaction failure
+
+
+## TECHNOLOGY STACK
+
+This project was built using the following tools:
+
+- React – Frontend framework
+- Ethers.js – Contract interaction library
+- MetaMask – Wallet provider
+- Alchemy – Ethereum RPC provider for reads
+- Tailwind CSS – Utility-first styling
+- Sepolia Test Network – Deployment environment
+
+
+## PROJECT STRUCTURE
+
+```
+src/
+    App.js
+    App.css
+    index.js
+    contracts/
+        SampleToken.json
+        sepolia.json
+
+public/
+    index.html
+
+.env
+```
+
+### APP.JS
+
+Contains all wallet connection logic, contract interaction, and UI rendering.
+
+### CONTRACTS
+
+Contains the ABI and deployed contract address pulled in at runtime.
+
+### ENV
+
+Contains the Alchemy RPC URL used for all read operations.
+
+
+## INSTALLATION
+
+### CLONE THE REPOSITORY:
+
+```bash
+git clone https://github.com/Ktredway0128/erc20-token-dashboard
+cd erc20-token-dashboard
+```
+
+### INSTALL DEPENDENCIES:
+
+```bash
+npm install
+```
+
+### START THE DEVELOPMENT SERVER:
+
+```bash
+npm start
+```
+
+
+## ENVIRONMENT SETUP
+
+Create a `.env` file in the root directory:
+
+```
+REACT_APP_ALCHEMY_URL=YOUR_SEPOLIA_ALCHEMY_URL
+```
+
+This value allows the dashboard to:
+
+- Read token data directly from the blockchain via Alchemy
+- Bypass MetaMask's RPC for all read operations
+
+
+## HOW TO USE
+
+### CONNECTING YOUR WALLET
+
+1. Make sure MetaMask is installed in your browser
+2. Switch MetaMask to the **Sepolia** test network
+3. Click **Connect Wallet**
+4. Approve the connection in MetaMask
+
+### TRANSFERRING TOKENS
+
+1. Enter the recipient wallet address in the address field
+2. Enter the amount of tokens to send
+3. Click **Send**
+4. Confirm the transaction in MetaMask
+5. Wait for the confirmation — a green success bar with an Etherscan link will appear
+
+### BURNING TOKENS
+
+1. Enter the amount of tokens to burn
+2. Click **Burn**
+3. Confirm the transaction in MetaMask
+4. Burned tokens are sent to the zero address and permanently destroyed
+
+### MINTING TOKENS (Admin Only)
+
+1. Connect with a wallet that holds the MINTER_ROLE
+2. Enter the destination address in the mint field
+3. Enter the amount to mint
+4. Click **Mint**
+5. Confirm the transaction in MetaMask
+
+### PAUSING THE TOKEN (Admin Only)
+
+1. Connect with a wallet that holds the PAUSER_ROLE
+2. Click **Pause Token** to halt all transfers
+3. Click **Unpause Token** to resume transfers
+4. Token status is displayed in real time
+
+
+## PROVIDER ARCHITECTURE
+
+The dashboard uses a dual-provider setup for optimal performance and reliability:
+
+| Provider | Purpose |
+|----------|---------|
+| MetaMask (Web3Provider) | Signs and broadcasts all write transactions |
+| Alchemy (JsonRpcProvider) | Handles all read operations |
+
+This separation ensures reads are fast and reliable while writes are always signed by the user's wallet.
+
+
+## SEPOLIA TESTNET DEPLOYMENT
+
+| Contract | Address | Etherscan |
+|----------|---------|-----------|
+| SampleToken | `0x036150039c33b1645080a9c913f96D4c65ccca48` | [View on Etherscan](https://sepolia.etherscan.io/address/0x036150039c33b1645080a9c913f96D4c65ccca48#code) |
+
+Deployed: 2026-03-19
+
+
+## EXAMPLE TOKEN CONFIGURATION
+
+Example parameters used with this dashboard:
+
+- Token Name: Sample Token
+- Token Symbol: STK
+- Maximum Supply: 1,000,000 tokens
+- Initial Supply: 100,000 tokens
+
+
+## SECURITY PRACTICES
+
+The dashboard enforces security at two levels:
+
+**UI Level**
+- Admin panel is hidden from non-admin wallets
+- Network check prevents connection on wrong chain
+- Input validation prevents invalid transactions
+
+**Contract Level**
+- All role checks are enforced by the smart contract
+- The UI is a convenience layer — the contract is the source of truth
+- No transaction can bypass the contract's access control
+
+
+## EXAMPLE USE CASES
+
+This dashboard architecture can support many types of projects:
+
+- DAO governance token management
+- Startup utility token administration
+- Game economy token controls
+- Loyalty rewards distribution
+- DeFi protocol token management
+
+
+## FUTURE ENHANCEMENTS
+
+This dashboard serves as the frontend layer for a larger Web3 infrastructure package.
+
+Possible upgrades include:
+
+- Airdrop interface
+- Investor vesting dashboard
+- Staking rewards panel
+- Governance voting interface
+- Multi-wallet admin management
+- Mainnet deployment
+
+
+## AUTHOR
+
+Kyle Tredway
+
+Smart Contract Developer / Token Launch Specialist
+
+
+## LICENSE
+
+MIT License
