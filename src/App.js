@@ -289,7 +289,7 @@ function App() {
           <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-5xl font-bold tracking-tight" style={{ color: '#0f4c5c' }}>
-                {tokenName || 'ERC-20'} <span style={{ color: '#f59e0b' }}>Dashboard</span>
+                ERC-20 <span style={{ color: '#f59e0b' }}>Token</span> Dashboard
               </h1>
               <p className="text-sm mt-2 uppercase tracking-widest font-medium" style={{ color: '#64748b' }}>
                 Token Management Interface
