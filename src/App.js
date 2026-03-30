@@ -159,6 +159,14 @@ function App() {
     }
   };
 
+  const handleRefresh = async () => {
+    if (!readContract || !account) return;
+    setStatus('Refreshing...');
+    setStatusStyle(STATUS_COLORS.default);
+    await loadTokenData(readContract, account);
+    setStatus('');
+  }; 
+
   const handleTransfer = async () => {
     if (!transferTo || !transferAmount || Number(transferAmount) <= 0) {
       setStatus('Please enter a valid address and amount.');
@@ -297,6 +305,20 @@ function App() {
             </div>
             {account && (
               <div className="text-right">
+                <button
+                  onClick={handleRefresh}
+                  disabled={isLoading}
+                  className="text-xs font-mono px-3 py-1 rounded-lg mb-2 transition-all hover:opacity-80"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.5)',
+                    border: '1px solid rgba(255,255,255,0.8)',
+                    color: '#0f4c5c',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    display: 'block',
+                    marginLeft: 'auto',
+                  }}>
+                  ↻ Refresh
+                </button>
                 <p className="text-xs font-mono" style={{ color: '#64748b' }}>Connected</p>
                 <p className="text-sm font-mono font-semibold" style={{ color: '#0f4c5c' }}>
                   {account.slice(0, 6)}...{account.slice(-4)}
