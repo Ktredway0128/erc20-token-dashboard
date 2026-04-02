@@ -293,39 +293,52 @@ function App() {
       `}</style>
       <div className="shimmer-bg"></div>
       <div className="content min-h-screen p-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto" style={{ position: 'relative' }}>
+
+          {/* TD LOGO - top left corner */}
+          <img 
+              src="/td-logo-justtd.png" 
+              alt="Tredway Development" 
+              style={{ 
+                  position: 'absolute',
+                  top: '0',
+                  left: '-110px',
+                  height: '35px',
+              }} 
+          />
+
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-5xl font-bold tracking-tight" style={{ color: '#0f4c5c' }}>
-                ERC-20 <span style={{ color: '#f59e0b' }}>Token</span> Dashboard
-              </h1>
-              <p className="text-sm mt-2 uppercase tracking-widest font-medium" style={{ color: '#64748b' }}>
-                Token Management Interface
-              </p>
+                <h1 className="text-5xl font-bold tracking-tight" style={{ color: '#0f4c5c' }}>
+                    ERC-20 <span style={{ color: '#f59e0b' }}>Token</span> Dashboard
+                </h1>
+                <p className="text-sm mt-2 uppercase tracking-widest font-medium" style={{ color: '#64748b' }}>
+                    Token Management Interface
+                </p>
             </div>
             {account && (
-              <div className="text-right">
-                <button
-                  onClick={handleRefresh}
-                  disabled={isLoading}
-                  className="text-xs font-mono px-3 py-1 rounded-lg mb-2 transition-all hover:opacity-80"
-                  style={{
-                    backgroundColor: 'rgba(255,255,255,0.5)',
-                    border: '1px solid rgba(255,255,255,0.8)',
-                    color: '#0f4c5c',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    display: 'block',
-                    marginLeft: 'auto',
-                  }}>
-                  ↻ Refresh
-                </button>
-                <p className="text-xs font-mono" style={{ color: '#64748b' }}>Connected</p>
-                <p className="text-sm font-mono font-semibold" style={{ color: '#0f4c5c' }}>
-                  {account.slice(0, 6)}...{account.slice(-4)}
-                </p>
-              </div>
+                <div className="text-right">
+                    <button
+                        onClick={handleRefresh}
+                        disabled={isLoading}
+                        className="text-xs font-mono px-3 py-1 rounded-lg mb-2 transition-all hover:opacity-80"
+                        style={{
+                            backgroundColor: 'rgba(255,255,255,0.5)',
+                            border: '1px solid rgba(255,255,255,0.8)',
+                            color: '#0f4c5c',
+                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                            display: 'block',
+                            marginLeft: 'auto',
+                        }}>
+                        ↻ Refresh
+                    </button>
+                    <p className="text-xs font-mono" style={{ color: '#64748b' }}>Connected</p>
+                    <p className="text-sm font-mono font-semibold" style={{ color: '#0f4c5c' }}>
+                        {account.slice(0, 6)}...{account.slice(-4)}
+                    </p>
+                </div>
             )}
-          </div>
+        </div>
           <hr style={{ borderColor: 'rgba(255, 255, 255, 0.5)', marginBottom: '2rem' }} />
 
           {status && (
@@ -334,7 +347,8 @@ function App() {
               {isLoading && <Spinner />}
               <span>{status}</span>
               {txHash && !isLoading && (
-                <a
+                
+                <a  
                   href={`https://sepolia.etherscan.io/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
