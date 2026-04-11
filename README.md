@@ -158,7 +158,7 @@ Contains the Alchemy RPC URL used for all read operations.
 
 ```bash
 git clone https://github.com/Ktredway0128/token-launch-dashboard
-cd erc20-token-dashboard
+cd token-dashboard
 ```
 
 ### INSTALL DEPENDENCIES:
