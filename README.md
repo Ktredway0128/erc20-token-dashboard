@@ -1,7 +1,7 @@
 # TOKEN LAUNCH DASHBOARD
 
 [![Verified on Etherscan](https://img.shields.io/badge/Etherscan-Verified-brightgreen)](https://sepolia.etherscan.io/address/0x036150039c33b1645080a9c913f96d4c65ccca48#code)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Netlify-blue)](https://erc20-token-dashboard.netlify.app/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Netlify-blue)](https://token-launch-dashboard.netlify.app/)
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![React](https://img.shields.io/badge/React-18-blue)
